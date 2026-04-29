@@ -186,11 +186,24 @@
     }
 
     @media (max-width: 768px) {
-      .container { padding: 40px 22px; }
+      .container { padding: 24px 14px; }
       .branding { grid-template-columns: 1fr; text-align: center; }
       .photo-row { justify-content: center; }
+      .photo-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+  }
+
+  .photo-row img {
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    border-radius: 16px;
     }
-       .checkin {
+  }
+
+  .checkin {
   margin-top: 80px;
   padding: 40px;
   border-radius: 24px;
@@ -427,6 +440,20 @@
   box-shadow: 0 12px 30px rgba(0,0,0,0.15);
 }
 
+@media (max-width: 768px) {
+
+  /* kasih ruang supaya sidebar ga nutup checklist */
+  .mini-game {
+    padding-bottom: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .action {
+    padding-bottom: 180px;
+  }
+}
+
 .game-task {
   font-weight: 600;
   font-size: 18px;
@@ -538,12 +565,14 @@
 @media (max-width: 768px) {
   .game-sidebar {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    bottom: 12px;
+    left: 50%;
+    right: auto;
     top: auto;
-    transform: none;
-    width: 320px;
-    max-width: 90vw;
+    transform: translateX(-50%);
+    width: calc(100vw - 32px);
+    max-width: 420px;
+    z-index: 9999;
   }
 }
   </style>
@@ -692,14 +721,13 @@
   <ul id="historyList" class="history-list">
     <li class="empty">No activity yet. Start one above ✨</li>
   </ul>
-</section>
-</section>
-
   <div class="quote">
     “Small consistent actions shape remarkable growth.”
   </div>
+</section>
+</section>
 
-</div>
+
 
 <script>
 let activeCategory = null;
@@ -882,7 +910,7 @@ function startGame(category, index) {
   
   // SHOW SIDEBAR
   document.getElementById("gameSidebar").classList.add("show");
-  updateSidebar(game.task, 0, "📝 Start your task...");
+  updateSidebar(game.task, 0, "Start your task...");
 
   // GAME LOGIC
   if (game.type === "text") {
@@ -900,7 +928,7 @@ function startGame(category, index) {
       
       updateSidebar(game.task, progress, 
         sentences.length >= 3 && wordCount >= 12 ? 
-        "✅ Perfect! 3+ sentences ready!" : 
+        "Perfect! 3+ sentences ready!" : 
         `⚠️ ${sentences.length}/3 sentences (${wordCount} words)`
       );
       
@@ -922,7 +950,7 @@ function startGame(category, index) {
       const progress = hasKeywords && hasLength ? 100 : (code.length / 20) * 100;
       
       updateSidebar(game.task, progress, 
-        hasKeywords && hasLength ? "✅ Code syntax correct!" : "⚠️ Check keywords & length"
+        hasKeywords && hasLength ? "Code syntax correct!" : "⚠️ Check keywords & length"
       );
       
       if (hasKeywords && hasLength) enableFinish();
@@ -931,7 +959,7 @@ function startGame(category, index) {
   } else if (game.type === "color") {
     area.innerHTML = `<input type="color" id="colorInput" style="width:120px;height:120px;border-radius:50%;border:none;box-shadow:0 10px 25px rgba(0,0,0,0.2);cursor:pointer;">`;
     document.getElementById("colorInput").addEventListener("input", () => {
-      updateSidebar(game.task, 100, "✅ Beautiful color chosen!");
+      updateSidebar(game.task, 100, "Beautiful color chosen!");
       enableFinish();
     });
 
@@ -953,7 +981,7 @@ function startGame(category, index) {
       updateSidebar(game.task, progress, `${count}/5 clicks - ${count >= 5 ? "✅" : "🔥"}`);
       
       if (count >= 5) {
-        box.textContent = "✅ Perfect! 5/5";
+        box.textContent = "Perfect! 5/5";
         box.style.background = "#22c55e";
         enableFinish();
       }
@@ -966,25 +994,47 @@ function startGame(category, index) {
         <p style="font-size:20px;font-weight:600;margin-bottom:20px;">${game.task}</p>
         <label style="display:flex;align-items:center;gap:12px;justify-content:center;font-size:18px;background:rgba(248,250,252,0.8);padding:18px 30px;border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
           <input type="checkbox" id="confirmCheck" style="width:24px;height:24px;">
-          ✅ Yes, I did it!
+          Yes, I did it!
         </label>
       </div>`;
     
     document.getElementById("confirmCheck").addEventListener("change", e => {
       if (e.target.checked) {
-        updateSidebar(game.task, 100, "✅ Task confirmed!");
+        updateSidebar(game.task, 100, "Task confirmed!");
         enableFinish();
+      setTimeout(() => {
+        document.getElementById("gameSidebar").classList.remove("show");
+        }, 300);
       }
     });
 
-  } else {
-    // Relax
-    area.innerHTML = `<div style="text-align:center;padding:30px;"><div style="font-size:60px;margin-bottom:20px;">😌</div><p style="font-size:22px;font-weight:600;">Enjoy relaxing!</p></div>`;
-    setTimeout(() => {
-      updateSidebar(game.task, 100, "😌 Relax mode complete!");
+ } else {
+  // Relax - manual confirm
+  area.innerHTML = `
+    <div style="text-align:center;padding:25px;">
+      <div style="font-size:52px;margin-bottom:20px;">😌</div>
+      <p style="font-size:20px;font-weight:600;margin-bottom:20px;">
+        ${game.task}
+      </p>
+      <label style="display:flex;align-items:center;gap:12px;justify-content:center;
+        font-size:18px;background:rgba(248,250,252,0.8);padding:18px 30px;
+        border-radius:16px;">
+        <input type="checkbox" id="relaxConfirm" style="width:24px;height:24px;">
+        Yes, I really did it
+      </label>
+    </div>
+  `;
+
+  document.getElementById("relaxConfirm").addEventListener("change", e => {
+    if (e.target.checked) {
+      updateSidebar(game.task, 100, "😌 Relax confirmed!");
       enableFinish();
-    }, 1500);
-  }
+      setTimeout(() => {
+        document.getElementById("gameSidebar").classList.remove("show");
+      }, 300);
+    }
+  });
+}
 
   startTimer(game.time);
 }
@@ -1005,7 +1055,7 @@ function completeGame() {
     <div style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; padding: 25px; border-radius: 20px; text-align: center; box-shadow: 0 15px 35px rgba(34,197,94,0.3);">
       <div style="font-size: 48px; margin-bottom: 15px;">🎊</div>
       <h3 style="margin: 0 0 10px 0; font-size: 24px;">Perfect Completion!</h3>
-      <p style="margin: 0 0 15px 0; font-size: 16px; opacity: 0.95;">✅ <strong>${gameName}</strong></p>
+      <p style="margin: 0 0 15px 0; font-size: 16px; opacity: 0.95;"><strong>${gameName}</strong></p>
       <div style="font-size: 14px; opacity: 0.85;">Great job staying consistent! 💙</div>
     </div>
   `;
