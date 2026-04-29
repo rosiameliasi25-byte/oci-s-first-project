@@ -40,6 +40,10 @@
   z-index: -1;
 }
 
+.hidden {
+  display: none !important;
+}
+
    body::after {
   content: '';
   position: fixed;
@@ -202,6 +206,44 @@
     border-radius: 16px;
     }
   }
+
+  .photo-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.photo-modal.hidden {
+  display: none;
+}
+
+/* === PHOTO MODAL IMAGE STYLE === */
+.photo-modal img {
+  width: auto;
+  max-width: 85vw;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: 18px;          /* ujung sedikit lengkung */
+  box-shadow: 0 25px 60px rgba(0,0,0,0.45);
+
+  animation: photoZoomIn 0.35s ease;
+}
+
+/* === ANIMASI MASUK === */
+@keyframes photoZoomIn {
+  from {
+    transform: scale(0.88);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
 
   .checkin {
   margin-top: 80px;
@@ -583,9 +625,9 @@
 
   <section class="branding">
     <div class="photo-row">
-      <img src="profile1.jpg" alt="photo 1">
-      <img src="profile2.jpg" alt="photo 2">
-      <img src="profile3.jpg" alt="photo 3">
+      <img src="profile1.jpg" alt="photo 1" onclick="openPhoto(this.src)">
+      <img src="profile2.jpg" alt="photo 2" onclick="openPhoto(this.src)">
+      <img src="profile3.jpg" alt="photo 3" onclick="openPhoto(this.src)">
     </div>
     <div class="name-block">
       <h1>Rosi Amelia</h1>
@@ -727,6 +769,10 @@
 </section>
 </section>
 
+  <div id="photoModal" class="photo-modal hidden">
+      <img id="modalImage">
+   </div>
+  </div>
 
 
 <script>
@@ -1123,6 +1169,21 @@ function celebrate() {
     setTimeout(() => confetti.remove(), 2000);
   }
 }
+
+function openPhoto(src) {
+  const modal = document.getElementById("photoModal");
+  const img = document.getElementById("modalImage");
+
+  if (!modal || !img) return;
+
+  img.src = src;
+  modal.classList.remove("hidden");
+}
+
+document.getElementById("photoModal").addEventListener("click", function () {
+  this.classList.add("hidden");
+});
+
 </script>
 
 </body>
