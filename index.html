@@ -22,21 +22,15 @@
   position: fixed;
   inset: 0;
 
-  /* background hanya gradasi lembut, BUKAN kabut */
   background: radial-gradient(
     circle at top left,
     rgba(255,255,255,0.06),
     rgba(10,15,30,0.2)
   );
 
-  /* blur DIKURANGI */
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-
-  /* INI KUNCI AGAR BISA DIKLIK */
   pointer-events: none;
-
-  /* HARUS DI BELAKANG */
   z-index: -1;
 }
 
@@ -221,19 +215,17 @@
   display: none;
 }
 
-/* === PHOTO MODAL IMAGE STYLE === */
 .photo-modal img {
   width: auto;
   max-width: 85vw;
   max-height: 80vh;
   object-fit: contain;
-  border-radius: 18px;          /* ujung sedikit lengkung */
+  border-radius: 18px;        
   box-shadow: 0 25px 60px rgba(0,0,0,0.45);
 
   animation: photoZoomIn 0.35s ease;
 }
 
-/* === ANIMASI MASUK === */
 @keyframes photoZoomIn {
   from {
     transform: scale(0.88);
@@ -429,7 +421,7 @@
 .hidden {
   display: none;
 }
-/* ===== CONFETTI EFFECT ===== */
+
 .confetti {
   position: fixed;
   width: 8px;
@@ -448,7 +440,6 @@
   }
 }
 
-/* ===== CATEGORY CTA BUTTON ===== */
 .category-cta {
   margin-top: 28px;
   display: flex;
@@ -472,7 +463,7 @@
   transform: translateY(-3px) scale(1.03);
   box-shadow: 0 18px 40px rgba(37,99,235,0.45);
 }
-/* ===== MINI GAME ===== */
+
 .mini-game {
   margin-top: 24px;
   padding: 24px;
@@ -484,7 +475,6 @@
 
 @media (max-width: 768px) {
 
-  /* kasih ruang supaya sidebar ga nutup checklist */
   .mini-game {
     padding-bottom: 120px;
   }
@@ -518,7 +508,6 @@
   cursor: pointer;
 }
 
-/* ===== GAME SIDEBAR PROGRESS ===== */
 .game-sidebar {
   position: fixed;
   right: 20px;
@@ -689,7 +678,6 @@
     Pick a category and discover activities you can do right now.
   </p>
 
-  <!-- CATEGORY BUTTONS -->
   <div class="category-buttons">
     <button onclick="showCategory('word')">✍️ Word & Thinking</button>
     <button onclick="showCategory('visual')">🎨 Visual & Creative</button>
@@ -698,16 +686,13 @@
     <button onclick="showCategory('relax')">🎮 Relax & Fun</button>
   </div>
 
-  <!-- CATEGORY RESULT -->
   <div id="categoryResult" class="category-result"></div>
 
-  <!-- CTA -->
   <div class="category-cta hidden" id="categoryCTA">
     <button onclick="openAction()">🚀 Start Activity</button>
   </div>
 </section>
 
-<!-- ACTION SECTION -->
 <section class="action hidden">
   <h2>Start a Small Action</h2>
   <p class="action-text">
@@ -717,10 +702,8 @@
   <div class="action-buttons" id="actionButtons"></div>
   <div id="actionResult" class="action-result"></div>
 
-  <!-- MINI GAME -->
   <div id="miniGame" class="mini-game hidden">
 
-    <!-- SIDEBAR -->
     <div id="gameSidebar" class="game-sidebar">
       <div class="sidebar-header">
         <div class="progress-circle" id="progressCircle">
@@ -737,7 +720,6 @@
       </div>
     </div>
 
-    <!-- MAIN GAME AREA -->
   <div style="position: relative; z-index: 2;">
     <p id="gameTask" class="game-task"></p>
     <div id="gameArea"></div>
@@ -779,6 +761,7 @@
 let activeCategory = null;
 let timer = null;
 let currentGame = null;
+let gameResult = null; 
 const miniGames = {
   word: [
     { type: "text", task: "Write 3 simple sentences", time: 90 },
@@ -821,7 +804,6 @@ const student = {
 
 let lastActivity = null;
 
-// 🔥 SIDEBAR HELPER FUNCTIONS
 function updateSidebar(title, progress, message) {
   document.getElementById("sidebarTitle").textContent = title;
   document.getElementById("progressText").textContent = Math.round(progress) + "%";
@@ -848,36 +830,55 @@ function getValidationType(progress) {
   return "error";
 }
 
-// 🔥 IMPROVED TIMER WITH SIDEBAR SYNC
 function startTimer(seconds) {
   let timeLeft = seconds;
-  const updateTime = () => {
+
+  clearInterval(timer);
+
+  timer = setInterval(() => {
     document.getElementById("timeLeft").textContent = timeLeft;
     document.getElementById("sidebarTimeLeft").textContent = timeLeft;
-    
-    const timeDisplay = document.querySelector(".time-display");
-    if (timeLeft <= 10) {
-      timeDisplay.style.background = "linear-gradient(135deg, #dc2626, #b91c1c)";
-    } else if (timeLeft <= 30) {
-      timeDisplay.style.background = "linear-gradient(135deg, #f59e0b, #d97706)";
-    }
-    
+
     if (timeLeft <= 0) {
       clearInterval(timer);
-      document.getElementById("finishBtn").disabled = true;
-      updateSidebar(document.getElementById("sidebarTitle").textContent, 0, "⏰ Time up! Try again.");
+      gameResult = "fail";
+
+      updateSidebar(
+        document.getElementById("sidebarTitle").textContent,
+        0,
+        "⏰ Time is up! Task failed."
+      );
+
+      const inputs = document
+        .getElementById("gameArea")
+        .querySelectorAll("textarea, input");
+
+      inputs.forEach(el => el.disabled = true);
+
+      return;
     }
+
     timeLeft--;
-  };
-  
-  clearInterval(timer);
-  timer = setInterval(updateTime, 1000);
-  updateTime();
+  }, 1000);
 }
 
 function enableFinish() {
-  document.getElementById("finishBtn").disabled = false;
-  document.getElementById("finishBtn").style.background = "linear-gradient(135deg, #22c55e, #16a34a)";
+  if (gameResult === "fail") return;
+
+  gameResult = "success";
+  const btn = document.getElementById("finishBtn");
+  btn.disabled = false;
+  btn.style.background =
+    "linear-gradient(135deg, #22c55e, #16a34a)";
+}
+
+function disableFinish() {
+  if (gameResult === "success") gameResult = null;
+
+  const btn = document.getElementById("finishBtn");
+  btn.disabled = true;
+  btn.style.background =
+    "linear-gradient(135deg, #6b7280, #4b5563)";
 }
 
 function handleActivity(activityName, hobbyName) {
@@ -935,7 +936,6 @@ function openAction() {
   }
 }
 
-// 🔥 MAIN GAME FUNCTION - FULLY INTEGRATED WITH SIDEBAR
 function startGame(category, index) {
   document.getElementById("actionResult").innerHTML = "";
   const game = miniGames[category][index];
@@ -946,19 +946,16 @@ function startGame(category, index) {
 };
   const area = document.getElementById("gameArea");
   const miniGame = document.getElementById("miniGame");
-  
-  // Reset & Show
+
   document.getElementById("finishBtn").disabled = true;
   document.getElementById("finishBtn").style.background = "linear-gradient(135deg, #6b7280, #4b5563)";
   area.innerHTML = "";
   miniGame.classList.remove("hidden");
   document.getElementById("gameTask").textContent = "🎯 " + game.task;
-  
-  // SHOW SIDEBAR
+
   document.getElementById("gameSidebar").classList.add("show");
   updateSidebar(game.task, 0, "Start your task...");
 
-  // GAME LOGIC
   if (game.type === "text") {
     area.innerHTML = `
       <div style="text-align:center;">
@@ -968,17 +965,23 @@ function startGame(category, index) {
     const textarea = document.getElementById("textInput");
     textarea.addEventListener("input", e => {
       const text = e.target.value.trim();
-      const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+      const sentences = text.split(/[.!?,]+/).filter(s => s.trim().length > 0);
       const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
       const progress = Math.min((sentences.length / 3) * 100, 100);
       
-      updateSidebar(game.task, progress, 
-        sentences.length >= 3 && wordCount >= 12 ? 
-        "Perfect! 3+ sentences ready!" : 
-        `⚠️ ${sentences.length}/3 sentences (${wordCount} words)`
-      );
-      
-      if (sentences.length >= 3 && wordCount >= 12) enableFinish();
+updateSidebar(
+  game.task,
+  progress,
+  sentences.length >= 3 && wordCount >= 12
+    ? "Perfect! 3+ sentences ready!"
+    : `⚠️ ${sentences.length}/3 sentences (${wordCount} words)`
+);
+
+  if (sentences.length >= 3) {
+     enableFinish();
+  } else {
+    disableFinish();
+      }
     });
 
   } else if (game.type === "code") {
@@ -1055,7 +1058,7 @@ function startGame(category, index) {
     });
 
  } else {
-  // Relax - manual confirm
+
   area.innerHTML = `
     <div style="text-align:center;padding:25px;">
       <div style="font-size:52px;margin-bottom:20px;">😌</div>
@@ -1087,27 +1090,48 @@ function startGame(category, index) {
 
 function completeGame() {
   const finishBtn = document.getElementById("finishBtn");
-  if (finishBtn.disabled) {
-    alert("⏳ Complete the task first! Don't cheat 😅");
-    return;
-  }
+  const gameName = currentGame?.task || "Unknown Task";
 
   clearInterval(timer);
   document.getElementById("miniGame").classList.add("hidden");
   document.getElementById("gameSidebar").classList.remove("show");
-  
- const gameName = currentGame?.task || "Unknown Task"; 
-  document.getElementById("actionResult").innerHTML = `
-    <div style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; padding: 25px; border-radius: 20px; text-align: center; box-shadow: 0 15px 35px rgba(34,197,94,0.3);">
-      <div style="font-size: 48px; margin-bottom: 15px;">🎊</div>
-      <h3 style="margin: 0 0 10px 0; font-size: 24px;">Perfect Completion!</h3>
-      <p style="margin: 0 0 15px 0; font-size: 16px; opacity: 0.95;"><strong>${gameName}</strong></p>
-      <div style="font-size: 14px; opacity: 0.85;">Great job staying consistent! 💙</div>
-    </div>
-  `;
 
-  addToHistory(` "${gameName}" - Fully completed!`);
-  celebrate();
+  if (gameResult === "success") {
+    document.getElementById("actionResult").innerHTML = `
+      <div style="background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white; padding: 25px; border-radius: 20px; text-align: center;">
+        <div style="font-size:48px;">🎉</div>
+        <h3>Succes!</h3>
+        <p>Succesful to do <strong>${gameName}</strong></p>
+      </div>
+    `;
+
+    addToHistory(`Succesful to do "${gameName}"`);
+    celebrate();
+
+  } else {
+    document.getElementById("actionResult").innerHTML = `
+      <div style="background: linear-gradient(135deg, #ef4444, #b91c1c);
+        color: white; padding: 25px; border-radius: 20px; text-align: center;">
+        <div style="font-size:48px;">😢</div>
+        <h3>Failed</h3>
+        <p>Failed to do <strong>${gameName}</strong></p>
+        <small>Try again! 💙</small>
+      </div>
+    `;
+
+    addToHistory(`Failed to do "${gameName}", Try again?`);
+  }
+  
+  gameResult = null;
+    currentGame = null;
+
+  document.querySelectorAll("button").forEach(btn => {
+    btn.disabled = false;
+  });
+
+  finishBtn.style.background =
+    "linear-gradient(135deg, #6b7280, #4b5563)";
 }
 
 const categories = {
